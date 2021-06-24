@@ -13,7 +13,7 @@ class Listing(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=300)
     start_bid = models.PositiveIntegerField()
-    url = models.URLField()
+    url = models.URLField(blank=True)
 
     def __str__(self):
         return f"{self.title} listed by {self.user.username}"

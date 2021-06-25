@@ -13,4 +13,4 @@ def current_price(listing):
     if listing.bids.last():
         return listing.bids.last().bid_price
     else:
-        return None
+        return listing.start_bid

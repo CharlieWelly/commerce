@@ -41,3 +41,18 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.user.username} comments on {self.item.title}: {self.comment}"
+
+
+class WatchList(models.Model):
+    listing = models.ForeignKey(
+        Listing, on_delete=models.CASCADE, related_name="watched_by"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watching")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["listing", "user"], name="unique_watch")
+        ]
+
+    def __str__(self):
+        return f"{self.listing.title} by {self.user.username}"

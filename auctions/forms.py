@@ -1,5 +1,5 @@
 from django.forms import ModelForm, TextInput, Textarea, NumberInput, URLInput
-from .models import Listing
+from .models import Listing, Bid, WatchList
 
 
 class ListingForm(ModelForm):
@@ -12,3 +12,10 @@ class ListingForm(ModelForm):
             "start_bid": NumberInput(attrs={"class": "form-control"}),
             "url": URLInput(attrs={"class": "form-control"}),
         }
+
+
+class BidForm(ModelForm):
+    class Meta:
+        model = Bid
+        fields = ["bid_price"]
+        widget = {"bid_price": NumberInput(attrs={"class": "form-control"})}

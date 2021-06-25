@@ -3,9 +3,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
-from .models import User, Listing
 from . import forms
+from .models import Listing, User, WatchList
+from auctions.templatetags import filters
 
 
 def index(request):
@@ -90,4 +92,52 @@ def active_listing(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    return render(request, "auctions/listing.html", {"listing": listing})
+    current_price = filters.current_price(listing)
+    if request.method == "POST":
+        form = forms.BidForm(request.POST)
+        new_bid = form.save(commit=False)
+        if current_price > new_bid.bid_price:
+            message = _("Bid price must be higher than current price")
+            return render(
+                request,
+                "auctions/listing.html",
+                {
+                    "listing": listing,
+                    "form": forms.BidForm(),
+                    "message": message,
+                },
+            )
+        else:
+            current_price = new_bid.bid_price
+            new_bid.user = request.user
+            new_bid.item = listing
+            new_bid.save()
+    return render(
+        request,
+        "auctions/listing.html",
+        {"listing": listing, "form": forms.BidForm()},
+    )
+
+
+def watch(request, listing_id):
+    user = request.user
+    listing = Listing.objects.get(pk=listing_id)
+    try:
+        new_watch = WatchList(user=user, listing=listing)
+        new_watch.save()
+    except IntegrityError:
+        current_watch = WatchList.objects.filter(user=user).filter(listing=listing)
+        current_watch.delete()
+        label = "Add to watchlist"
+        return render(
+            request,
+            "auctions/listing.html",
+            {"listing": listing, "form": forms.BidForm(), "label": label},
+        )
+    else:
+        label = "Remove from watchlist"
+        return render(
+            request,
+            "auctions/listing.html",
+            {"listing": listing, "form": forms.BidForm(), "label": label},
+        )

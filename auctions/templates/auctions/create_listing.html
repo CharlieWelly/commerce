@@ -2,6 +2,12 @@
 
 {% block title %}Create New listing{% endblock %}
 
+{% block nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'index' %}">Home Page</a>
+</li>
+{% endblock nav %}
+
 {% block body %}
 
 <form action="{% url 'create_listing' %}" method="POST">

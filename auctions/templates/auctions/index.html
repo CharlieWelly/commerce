@@ -1,7 +1,36 @@
 {% extends "auctions/layout.html" %}
-
+{% load filters %}
 {% block body %}
-    <h2>Active Listings</h2>
+<h2>Active Listings</h2>
 
-    TODO
+<div class="container">
+    <div class="row">
+        {% for listing in listings %}
+        {% if listing.id|mod_four == 2 %}
+        <div class="w-100"></div>
+        {% endif %}
+        <div class="col-3">
+            <a href="{% url 'listing' listing.id %}">
+                <div class="card">
+                    <h5 class="card-header">{{ listing.title }}</h5>
+                    {% if listing.url %}
+                    <img src="{{ listing.url }}" alt="listed picture" class="card-img-top">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">by {{ listing.user.username }}</h6>
+                        {% if listing|current_price %}
+                        <p class="card-subtitle"><b>Current price: </b>{{ listing|current_price }}</p>
+                        {% else %}
+                        <p class="card-subtitle"><b>Current price: </b>{{ listing.start_bid }}</p>
+                        {% endif %}
+                        <p class="card-text"><b>Description: </b>{{ listing.description }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div>there is no current listings</div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

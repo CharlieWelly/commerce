@@ -13,4 +13,12 @@ def current_price(listing):
     if listing.bids.last():
         return listing.bids.last().bid_price
     else:
-        return None
+        return listing.start_bid
+
+
+@register.filter(name="watched")
+def watched(listing, user):
+    if listing.watched_by.filter(user=user):
+        return True
+    else:
+        return False

@@ -3,13 +3,16 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
-from .models import User, Listing
 from . import forms
+from .models import Listing, User, WatchList
+from auctions.templatetags import filters
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    listings = Listing.objects.all()
+    return render(request, "auctions/index.html", {"listings": listings})
 
 
 def login_view(request):
@@ -74,7 +77,7 @@ def create_listing(request):
         new_listing = form.save(commit=False)
         new_listing.user = request.user
         new_listing.save()
-        return HttpResponseRedirect(reverse("active_listing"))
+        return HttpResponseRedirect(reverse("index"))
     else:
         return render(
             request,
@@ -83,11 +86,44 @@ def create_listing(request):
         )
 
 
-def active_listing(request):
-    listings = Listing.objects.all()
-    return render(request, "auctions/active_listing.html", {"listings": listings})
-
-
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    return render(request, "auctions/listing.html", {"listing": listing})
+    current_price = filters.current_price(listing)
+    if request.method == "POST":
+        form = forms.BidForm(request.POST)
+        new_bid = form.save(commit=False)
+        if current_price > new_bid.bid_price:
+            message = _("Bid price must be higher than current price")
+            return render(
+                request,
+                "auctions/listing.html",
+                {
+                    "listing": listing,
+                    "form": forms.BidForm(),
+                    "message": message,
+                },
+            )
+        else:
+            current_price = new_bid.bid_price
+            new_bid.user = request.user
+            new_bid.item = listing
+            new_bid.save()
+    return render(
+        request,
+        "auctions/listing.html",
+        {"listing": listing, "form": forms.BidForm()},
+    )
+
+
+def watch(request, listing_id):
+    user = request.user
+    listing = Listing.objects.get(pk=listing_id)
+    try:
+        new_watch = WatchList(user=user, listing=listing)
+        new_watch.save()
+    except IntegrityError:
+        current_watch = WatchList.objects.filter(user=user).filter(listing=listing)
+        current_watch.delete()
+    return render(
+        request, "auctions/listing.html", {"listing": listing, "form": forms.BidForm()}
+    )

@@ -19,10 +19,11 @@
         <h6 class="card-title">by {{ listing.user.username }}</h6>
         <p class="card-subtitle"><b>Current price: </b>{{ listing|current_price }}</p>
         <p class="card-text"><b>Description: </b>{{ listing.description }}</p>
+
         {% if message %}
         <p>{{ message }}</p>
         {% endif %}
-        {% if user.is_authenticated %}
+
         <a href="{% url 'watch' listing.id %}">
             {% if listing|watched:request.user %}
             Remove from watchlist
@@ -30,14 +31,22 @@
             Add to watchlist
             {% endif %}
         </a>
-        <form action="{% url 'listing' listing.id %}" method="POST">
+
+        <form action="{% url 'bid' listing.id %}" method="POST">
             {% csrf_token %}
             {{ form }}
             <input type="submit" value="Bid">
         </form>
-        {% else %}
-        <p>Please login to start your bid</p>
+
+        {% if request.user == listing.user %}
+        <a href="{% url 'close_bid' listing.id %}">Close Bid</a>
         {% endif %}
+
+        {% if listing.status == 0 %}
+        <div>This listing is closed</div>
+        {% endif %}
+
     </div>
+
 </div>
 {% endblock %}

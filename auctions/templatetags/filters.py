@@ -18,7 +18,7 @@ def current_price(listing):
 
 @register.filter(name="watched")
 def watched(listing, user):
-    if listing.watched_by.filter(user=user):
+    if user.is_authenticated and listing.watched_by.filter(user=user):
         return True
     else:
         return False

@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.contrib.auth.decorators import login_required
 
 from . import forms
 from .models import Listing, User, WatchList
@@ -88,26 +89,6 @@ def create_listing(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    current_price = filters.current_price(listing)
-    if request.method == "POST":
-        form = forms.BidForm(request.POST)
-        new_bid = form.save(commit=False)
-        if current_price > new_bid.bid_price:
-            message = _("Bid price must be higher than current price")
-            return render(
-                request,
-                "auctions/listing.html",
-                {
-                    "listing": listing,
-                    "form": forms.BidForm(),
-                    "message": message,
-                },
-            )
-        else:
-            current_price = new_bid.bid_price
-            new_bid.user = request.user
-            new_bid.item = listing
-            new_bid.save()
     return render(
         request,
         "auctions/listing.html",
@@ -115,6 +96,29 @@ def listing(request, listing_id):
     )
 
 
+@login_required(login_url="login")
+def bid(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    last_bid = listing.bids.last()
+    form = forms.BidForm(request.POST)
+    bid = form.save(commit=False)
+    if last_bid and bid.bid_price <= last_bid.bid_price:
+        message = "bid price must be higher than current price"
+    elif not last_bid and bid.bid_price < listing.start_bid:
+        message = "bid price must be at least start price"
+    else:
+        bid.user = request.user
+        bid.item = listing
+        bid.save()
+        message = ""
+    return render(
+        request,
+        "auctions/listing.html",
+        {"listing": listing, "form": forms.BidForm(), "message": message},
+    )
+
+
+@login_required(login_url="login")
 def watch(request, listing_id):
     user = request.user
     listing = Listing.objects.get(pk=listing_id)
@@ -124,6 +128,11 @@ def watch(request, listing_id):
     except IntegrityError:
         current_watch = WatchList.objects.filter(user=user).filter(listing=listing)
         current_watch.delete()
-    return render(
-        request, "auctions/listing.html", {"listing": listing, "form": forms.BidForm()}
-    )
+    return HttpResponseRedirect(reverse("listing", args=(listing_id,)))
+
+
+def close_bid(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    listing.status = 0
+    listing.save()
+    return HttpResponseRedirect(reverse("listing", args=(listing_id,)))

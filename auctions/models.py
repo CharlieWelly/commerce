@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
@@ -7,6 +9,10 @@ class User(AbstractUser):
 
 
 class Listing(models.Model):
+    class Status(models.IntegerChoices):
+        CLOSE = 0
+        OPEN = 1
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="listed_items"
     )
@@ -14,6 +20,7 @@ class Listing(models.Model):
     description = models.TextField(max_length=300)
     start_bid = models.PositiveIntegerField()
     url = models.URLField(blank=True)
+    status = models.IntegerField(choices=Status.choices, default=Status.OPEN)
 
     def __str__(self):
         return f"{self.title} listed by {self.user.username}"
@@ -55,4 +62,4 @@ class WatchList(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.listing.title} by {self.user.username}"
+        return f"{self.listing.title} watched by {self.user.username}"

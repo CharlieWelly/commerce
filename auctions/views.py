@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required
 
 from . import forms
-from .models import Listing, User, WatchList
+from .models import Listing, User, WatchList, CloseBid, Comment
 from auctions.templatetags import filters
 
 
@@ -92,7 +92,12 @@ def listing(request, listing_id):
     return render(
         request,
         "auctions/listing.html",
-        {"listing": listing, "form": forms.BidForm()},
+        {
+            "listing": listing,
+            "bid_form": forms.BidForm(),
+            "comment_form": forms.CommentForm(),
+            "comments": listing.item_comments.all(),
+        },
     )
 
 
@@ -110,11 +115,17 @@ def bid(request, listing_id):
         bid.user = request.user
         bid.item = listing
         bid.save()
-        message = ""
+        message = "Biding successfully"
     return render(
         request,
         "auctions/listing.html",
-        {"listing": listing, "form": forms.BidForm(), "message": message},
+        {
+            "listing": listing,
+            "bid_form": forms.BidForm(),
+            "comment_form": forms.CommentForm(),
+            "comments": listing.item_comments.all(),
+            "message": message,
+        },
     )
 
 
@@ -133,6 +144,19 @@ def watch(request, listing_id):
 
 def close_bid(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    listing.status = 0
-    listing.save()
+    if listing.bids.last():
+        CloseBid.objects.create(listing=listing, bid=listing.bids.last())
+    else:
+        CloseBid.objects.create(listing=listing)
+    return HttpResponseRedirect(reverse("listing", args=(listing_id,)))
+
+
+@login_required(login_url="login")
+def comment(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    form = forms.CommentForm(request.POST)
+    comment = form.save(commit=False)
+    comment.user = request.user
+    comment.item = listing
+    comment.save()
     return HttpResponseRedirect(reverse("listing", args=(listing_id,)))

@@ -6,10 +6,10 @@
 <div class="container">
     <div class="row">
         {% for listing in listings %}
-        {% if listing.id|mod_four == 2 %}
-        <div class="w-100"></div>
-        {% endif %}
-        <div class="col-3">
+        <!-- {% if listing.id|mod_four == 2 %} -->
+        <!-- <div class="w-100"></div> -->
+        <!-- {% endif %} -->
+        <div class="col-4">
             <a href="{% url 'listing' listing.id %}">
                 <div class="card">
                     <h5 class="card-header">{{ listing.title }}</h5>

@@ -20,9 +20,12 @@
         <p class="card-subtitle"><b>Current price: </b>{{ listing|current_price }}</p>
         <p class="card-text"><b>Description: </b>{{ listing.description }}</p>
 
-        {% if message %}
-        <p>{{ message }}</p>
+        {% if listing.closed %}
+        <div>This listing is closed</div>
+        {% if listing.closed.bid and request.user == listing.closed.bid.user %}
+        <div>Congratulation {{ listing.closed.bid.user }} on winning the bid</div>
         {% endif %}
+        {% else %}
 
         <a href="{% url 'watch' listing.id %}">
             {% if listing|watched:request.user %}
@@ -32,18 +35,30 @@
             {% endif %}
         </a>
 
+        {% if message %}
+        <p>{{ message }}</p>
+        {% endif %}
+
         <form action="{% url 'bid' listing.id %}" method="POST">
             {% csrf_token %}
-            {{ form }}
+            {{ bid_form }}
             <input type="submit" value="Bid">
         </form>
+
+        <form action="{% url 'comment' listing.id %}" method="POST">
+            {% csrf_token %}
+            {{ comment_form}}
+            <input type="submit" value="submit">
+        </form>
+
+        {% for comment in comments %}
+        <p>{{ comment }}</p>
+        {% endfor %}
 
         {% if request.user == listing.user %}
         <a href="{% url 'close_bid' listing.id %}">Close Bid</a>
         {% endif %}
 
-        {% if listing.status == 0 %}
-        <div>This listing is closed</div>
         {% endif %}
 
     </div>

@@ -9,10 +9,6 @@ class User(AbstractUser):
 
 
 class Listing(models.Model):
-    class Status(models.IntegerChoices):
-        CLOSE = 0
-        OPEN = 1
-
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="listed_items"
     )
@@ -20,7 +16,6 @@ class Listing(models.Model):
     description = models.TextField(max_length=300)
     start_bid = models.PositiveIntegerField()
     url = models.URLField(blank=True)
-    status = models.IntegerField(choices=Status.choices, default=Status.OPEN)
 
     def __str__(self):
         return f"{self.title} listed by {self.user.username}"
@@ -36,6 +31,21 @@ class Bid(models.Model):
         return f"{self.user.username} bid {self.bid_price} on {self.item.title}"
 
 
+class CloseBid(models.Model):
+    listing = models.OneToOneField(
+        Listing, on_delete=models.CASCADE, related_name="closed"
+    )
+    bid = models.OneToOneField(
+        Bid,
+        on_delete=models.CASCADE,
+        related_name="won",
+        null=True,
+    )
+
+    def __str__(self):
+        return f"{self.listing} {self.bid}"
+
+
 class Comment(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user_comments"
@@ -47,7 +57,7 @@ class Comment(models.Model):
     comment = models.TextField(max_length=300)
 
     def __str__(self):
-        return f"{self.user.username} comments on {self.item.title}: {self.comment}"
+        return f"{self.user.username}: {self.comment}"
 
 
 class WatchList(models.Model):

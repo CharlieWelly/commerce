@@ -9,6 +9,12 @@ class User(AbstractUser):
 
 
 class Listing(models.Model):
+    class Categories(models.IntegerChoices):
+        CAR = 1
+        PLANT = 2
+        HARRY = 3
+        BOOK = 4
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="listed_items"
     )
@@ -16,6 +22,7 @@ class Listing(models.Model):
     description = models.TextField(max_length=300)
     start_bid = models.PositiveIntegerField()
     url = models.URLField(blank=True)
+    categories = models.IntegerField(choices=Categories.choices, null=True)
 
     def __str__(self):
         return f"{self.title} listed by {self.user.username}"

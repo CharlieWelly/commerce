@@ -1,13 +1,9 @@
+<!-- use carousel in bootstrap -->
+
 {% extends "auctions/layout.html" %}
 {% load filters %}
 
 {% block title %}{{listing.title}}{% endblock %}
-
-{% block nav %}
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'index' %}">Home Page</a>
-</li>
-{% endblock nav %}
 
 {% block body %}
 <div class="card">

@@ -160,3 +160,28 @@ def comment(request, listing_id):
     comment.item = listing
     comment.save()
     return HttpResponseRedirect(reverse("listing", args=(listing_id,)))
+
+
+@login_required(login_url="login")
+def watch_list(request):
+    user = request.user
+    watch_list = user.watching.all()
+    return render(
+        request,
+        "auctions/watch_list.html",
+        {"listings": [entry.listing for entry in watch_list]},
+    )
+
+
+def categories(request):
+    return render(
+        request, "auctions/categories.html", {"categories": list(Listing.Categories)}
+    )
+
+
+def category(request, category_value):
+    return render(
+        request,
+        "auctions/index.html",
+        {"listings": Listing.objects.filter(categories=category_value)},
+    )

@@ -1,7 +1,9 @@
 {% extends "auctions/layout.html" %}
 {% load filters %}
+
+{% block title %}Watch List{% endblock %}
+
 {% block body %}
-<h2>Active Listings</h2>
 
 <div class="container">
     <div class="row">
@@ -26,8 +28,9 @@
             </a>
         </div>
         {% empty %}
-        <div>there is no current listings</div>
+        <div>there is no current watched listings</div>
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}

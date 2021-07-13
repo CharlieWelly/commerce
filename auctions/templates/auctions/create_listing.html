@@ -2,19 +2,22 @@
 
 {% block title %}Create New listing{% endblock %}
 
-{% block nav %}
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'index' %}">Home Page</a>
-</li>
-{% endblock nav %}
-
 {% block body %}
+<div class="container">
+    <h3>Create New Listing</h3>
 
-<form action="{% url 'create_listing' %}" method="POST">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="submit">
-
-</form>
+    <form action="{% url 'create_listing' %}" method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="input-group mb-3">
+            <div class="input-group-prepend col-3 col-sm-2 px-0">
+                <label class="input-group-text col-12" for="{{ field.auto_id }}">{{ field.label }}</label>
+            </div>
+            {{ field }}
+        </div>
+        {% endfor %}
+        <input class="btn btn-primary w-100" type="submit" value="submit">
+    </form>
+</div>
 
 {% endblock %}

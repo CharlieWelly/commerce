@@ -3,9 +3,25 @@ from django import template
 register = template.Library()
 
 
-@register.filter(name="mod_four")
-def mod_four(value):
-    return value % 4
+@register.filter(name="mod")
+def mod(value, x):
+    return value % x
+
+
+@register.filter(name="bid_user")
+def bid_user(listing):
+    if listing.bids.last():
+        return listing.bids.last().user.username
+    else:
+        return None
+
+
+@register.filter(name="bid_count")
+def bid_count(listing):
+    if listing.bids:
+        return listing.bids.count()
+    else:
+        return 0
 
 
 @register.filter(name="current_price")

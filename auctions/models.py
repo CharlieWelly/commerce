@@ -21,7 +21,7 @@ class Listing(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=300)
     start_bid = models.PositiveIntegerField()
-    url = models.URLField(blank=True)
+    url = models.URLField(default="#")
     categories = models.IntegerField(choices=Categories.choices, null=True)
 
     def __str__(self):
@@ -61,7 +61,7 @@ class Comment(models.Model):
         Listing, on_delete=models.CASCADE, related_name="item_comments"
     )
     comment_time = models.DateField(auto_now=True)
-    comment = models.TextField(max_length=300)
+    comment = models.TextField(max_length=100)
 
     def __str__(self):
         return f"{self.user.username}: {self.comment}"

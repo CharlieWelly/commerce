@@ -1,3 +1,44 @@
 body {
     padding: 10px;
 }
+
+main {
+    margin-top: 80px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card {
+    flex: 0 0 30vh !important;
+    margin: 1rem;
+  }
+
+.card-body {
+    padding: 0.25rem 0.25rem;
+    width: 100%
+}
+
+.card-img-top {
+    height: 30vh;
+    width: 100%;
+    object-fit: cover;
+}
+
+.img-listing {
+    object-fit: contain;
+    width: 100%;
+}
+
+.comment {
+    display: block;
+    max-width: 50% !important;
+    white-space: normal;
+    text-align: start;
+    font-weight: 500;
+    border-radius: 0.6rem;
+    line-height: normal;
+}
+
+.font-weight-slight-bold {
+    font-weight: 500;
+}

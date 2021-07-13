@@ -168,7 +168,7 @@ def watch_list(request):
     watch_list = user.watching.all()
     return render(
         request,
-        "auctions/watch_list.html",
+        "auctions/index.html",
         {"listings": [entry.listing for entry in watch_list]},
     )
 

@@ -1,36 +1,11 @@
 {% extends "auctions/layout.html" %}
 {% load filters %}
-
-{% block title %}Watch List{% endblock %}
-
 {% block body %}
-
-<div class="container">
-    <div class="row">
-        {% for listing in listings %}
-        <div class="col-4">
-            <a href="{% url 'listing' listing.id %}">
-                <div class="card">
-                    <h5 class="card-header">{{ listing.title }}</h5>
-                    {% if listing.url %}
-                    <img src="{{ listing.url }}" alt="listed picture" class="card-img-top">
-                    {% endif %}
-                    <div class="card-body">
-                        <h6 class="card-title">by {{ listing.user.username }}</h6>
-                        {% if listing|current_price %}
-                        <p class="card-subtitle"><b>Current price: </b>{{ listing|current_price }}</p>
-                        {% else %}
-                        <p class="card-subtitle"><b>Current price: </b>{{ listing.start_bid }}</p>
-                        {% endif %}
-                        <p class="card-text"><b>Description: </b>{{ listing.description }}</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% empty %}
-        <div>there is no current watched listings</div>
-        {% endfor %}
-    </div>
+<div class="card-deck flex-wrap">
+    {% for listing in listings %}
+    {% include 'auctions/reuse.html' with listing=listing %}
+    {% endfor %}
+    <div class="card-adjustment"></div>
 </div>
-
+</div>
 {% endblock %}

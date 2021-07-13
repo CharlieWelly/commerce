@@ -1,63 +1,121 @@
-<!-- use carousel in bootstrap -->
-
 {% extends "auctions/layout.html" %}
 {% load filters %}
 
 {% block title %}{{listing.title}}{% endblock %}
 
 {% block body %}
-<div class="card">
-    <h5 class="card-header">{{ listing.title }}</h5>
-    {% if listing.url %}
-    <img src="{{ listing.url }}" alt="listed picture" class="card-img-top">
-    {% endif %}
-    <div class="card-body">
-        <h6 class="card-title">by {{ listing.user.username }}</h6>
-        <p class="card-subtitle"><b>Current price: </b>{{ listing|current_price }}</p>
-        <p class="card-text"><b>Description: </b>{{ listing.description }}</p>
-
-        {% if listing.closed %}
-        <div>This listing is closed</div>
-        {% if listing.closed.bid and request.user == listing.closed.bid.user %}
-        <div>Congratulation {{ listing.closed.bid.user }} on winning the bid</div>
-        {% endif %}
-        {% else %}
-
-        <a href="{% url 'watch' listing.id %}">
-            {% if listing|watched:request.user %}
-            Remove from watchlist
-            {% else %}
-            Add to watchlist
+<div class="container-lg px-0 px-sm-3">
+    <div class="row">
+        <div class="col-sm-5 col-md-4">
+            {% if listing.url %}
+            <img src="{{ listing.url }}" alt="listed picture" class="img-thumbnail img-listing">
             {% endif %}
-        </a>
+        </div>
+        <div class="col-sm-7 col-md-6">
+            <div class="border-bottom my-1">
+                <!-- Listing title -->
+                <h3 class="d-inline">{{ listing.title }}</h3>
 
-        {% if message %}
-        <p>{{ message }}</p>
-        {% endif %}
+                <div class="d-inline float-right">
+                    <!-- Add bookmark -->
+                    <a class="mx-2" href="{% url 'watch' listing.id %}">
+                        {% if listing|watched:request.user %}
+                        Remove Bookmark
+                        {% else %}
+                        Bookmark
+                        {% endif %}
+                    </a>
 
-        <form action="{% url 'bid' listing.id %}" method="POST">
-            {% csrf_token %}
-            {{ bid_form }}
-            <input type="submit" value="Bid">
-        </form>
+                    <!-- Close listing option-->
+                    {% if request.user == listing.user %}
+                    <a href="{% url 'close_bid' listing.id %}">Close Bid</a>
+                    {% endif %}
+                </div>
 
-        <form action="{% url 'comment' listing.id %}" method="POST">
-            {% csrf_token %}
-            {{ comment_form}}
-            <input type="submit" value="submit">
-        </form>
+                <div class="small text-secondary">by {{ listing.user.username }}</div>
 
-        {% for comment in comments %}
-        <p>{{ comment }}</p>
-        {% endfor %}
+                <!-- Listing warning if the bid is closed -->
+                {% if listing.closed %}
+                <div class="alert alert-danger" role="alert">This listing is closed</div>
+                {% if listing.closed.bid and request.user == listing.closed.bid.user %}
+                <div class="alert alert-success" role="alert">Congratulation {{ listing.closed.bid.user }} on winning the bid</div>
+                {% endif %}
+                {% endif %}
+            </div>
 
-        {% if request.user == listing.user %}
-        <a href="{% url 'close_bid' listing.id %}">Close Bid</a>
-        {% endif %}
+            <div class="border-bottom my-3">
+                <!-- Current price and description -->
+                <div class="my-3"><span class="font-weight-slight-bold">Description: </span>{{ listing.description }}</div>
+                <div class="d-inline"><span class="font-weight-slight-bold">Current bid: </span>${{ listing|current_price }}</div>
 
-        {% endif %}
+                <!-- show who is the last bid -->
+                {% if listing|bid_user %}
+                <span class="small text-secondary">by {{ listing|bid_user }}</span>
+                {% endif %}
 
+                <!-- Show the number of bids -->
+                <div class="mb-3 small text-secondary">There are currently {{ listing|bid_count }} bid(s)</div>
+
+                <!-- Bidding Form with alert message -->
+                {% if message %}
+                <div class="alert alert-danger" role="alert">{{ message }}</div>
+                {% endif %}
+
+                {% if not listing.closed %}
+                <form class="my-2" action="{% url 'bid' listing.id %}" method="POST">
+                    <div class="input-group">
+                        {% csrf_token %}
+                        {% for field in bid_form %}
+                        <div class="d-none">
+                            <label class="input-group-text" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        {{ field }}
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-gavel"></i></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+
+            <div>
+                <!-- List of comments -->
+                <h6>Ask the seller</h6>
+                <div class="container ml-0 ">
+                    {% for comment in comments %}
+                    {% if comment.user == listing.user %}
+                    <div class="row justify-content-end align-items-start my-2">
+                        <div class="badge badge-light comment">{{ comment.comment }}</div>
+                        <span class="badge badge-pill badge-primary">{{ comment.user.username }}</span>
+                    </div>
+                    {% else %}
+                    <div class="row align-items-start my-2">
+                        <span class="badge badge-pill badge-secondary">{{ comment.user.username }}</span>
+                        <div class="badge badge-light comment">{{ comment.comment }}</div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Comment on Bidding -->
+
+                <form action="{% url 'comment' listing.id %}" method="POST">
+                    {% csrf_token %}
+                    {% for field in comment_form %}
+                    <div class="input-group">
+                        <div class="d-none">
+                            <label class="input-group-text" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        {{ field }}
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
     </div>
-
 </div>
 {% endblock %}

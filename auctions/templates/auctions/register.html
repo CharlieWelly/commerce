@@ -2,10 +2,11 @@
 
 {% block body %}
 
+<div class="container">
     <h2>Register</h2>
 
     {% if message %}
-        <div>{{ message }}</div>
+    <div>{{ message }}</div>
     {% endif %}
 
     <form action="{% url 'register' %}" method="post">
@@ -26,5 +27,5 @@
     </form>
 
     Already have an account? <a href="{% url 'login' %}">Log In here.</a>
-
+</div>
 {% endblock %}
